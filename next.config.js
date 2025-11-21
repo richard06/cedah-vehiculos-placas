@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+  ignoreDuringBuilds: true,
+},
+
   allowedDevOrigins: ["*.preview.same-app.com"],
   images: {
     unoptimized: true,

@@ -16,7 +16,7 @@ export default function ValidePage() {
     setResultado(null);
 
     try {
-      const res = await fetch(`/api/placas/validate?placa=${encodeURIComponent(placa)}`);
+      const res = await fetch(`/api/validar?placa=${encodeURIComponent(placa)}`);
       const data = await res.json();
 
       if (!res.ok) {

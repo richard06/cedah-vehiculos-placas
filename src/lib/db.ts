@@ -26,13 +26,13 @@ export async function getVehiculoByPlaca(numeroPlaca: number): Promise<Vehiculo 
 
 export async function createVehiculo(
   numeroPlaca: number,
-  tipoTransporte: string,
+  tipotransporte: string,
   vigencia: string
 ): Promise<Vehiculo> {
   try {
     const result = await sql<Vehiculo>`
       INSERT INTO vehiculo (numeroplaca, tipotransporte, vigencia, activo)
-      VALUES (${numeroPlaca}, ${tipoTransporte}, ${vigencia}, true)
+      VALUES (${numeroPlaca}, ${tipotransporte}, ${vigencia}, true)
       RETURNING *
     `;
     return result.rows[0];

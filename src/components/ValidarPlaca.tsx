@@ -19,14 +19,14 @@ interface ValidationResult {
 }
 
 export default function ValidatePlaca() {
-  const [numeroPlaca, setNumeroPlaca] = useState('');
+  const [numeroplaca, setNumeroPlaca] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
 
   const handleValidate = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!numeroPlaca.trim()) {
+    if (!numeroplaca.trim()) {
       return;
     }
 
@@ -34,13 +34,14 @@ export default function ValidatePlaca() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/placas/validate', {
+      const response = await fetch('/api/validar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ numeroPlaca: Number(numeroPlaca) })
+        body: JSON.stringify({ numeroplaca: Number(numeroplaca) })
       });
 
       const data = await response.json();
+      console.log('Respuesta de validación:', data);
       setResult(data);
     } catch (error) {
       setResult({
@@ -63,7 +64,7 @@ export default function ValidatePlaca() {
                 </div>
              <input
                     type="text"
-                    value={numeroPlaca}
+                    value={numeroplaca}
                     onChange={(e) => setNumeroPlaca(e.target.value)}
                     placeholder="INGRESE NÚMERO DE PLACA (EJ: 58AP1G)"
                     className="flex-1 px-6 text-gray-600 placeholder-gray-400 outline-none font-semibold uppercase text-sm tracking-wide"
@@ -71,7 +72,7 @@ export default function ValidatePlaca() {
                 />
                 <button
                   type="submit"
-                  disabled={loading || !numeroPlaca.trim()}
+                  disabled={loading || !numeroplaca.trim()}
                   className="px-6 py-2 bg-[#8B2C4A] text-white rounded-md hover:bg-[#691C32] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
                   {loading ? 'Validando...' : 'Validar'}

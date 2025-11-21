@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 interface Vehiculo {
-  numeroPlaca: number;
-  tipoTransporte: string;
+  numeroplaca: number;
+  tipotransporte: string;
   vigencia: string;
   activo: boolean;
 }
@@ -17,6 +17,7 @@ export default function VehiculosPage() {
     try {
       const res = await fetch("/api/vehiculos");
       const data = await res.json();
+      console.log("Vehículos cargados:", data);
       setVehiculos(data);
     } catch (err) {
       console.error("Error cargando vehículos", err);
@@ -25,12 +26,12 @@ export default function VehiculosPage() {
     }
   };
 
-  const toggleActivo = async (numeroPlaca: number, nuevoEstado: boolean) => {
+  const toggleActivo = async (numeroplaca: number, nuevoEstado: boolean) => {
     try {
       await fetch("/api/vehiculos/estado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ numeroPlaca, activo: nuevoEstado }),
+        body: JSON.stringify({ numeroplaca, activo: nuevoEstado }),
       });
 
       cargarVehiculos(); // recargar
@@ -61,16 +62,16 @@ export default function VehiculosPage() {
 
         <tbody>
           {vehiculos.map((v) => (
-            <tr key={v.numeroPlaca} className="hover:bg-gray-50">
-              <td className="border p-2">{v.numeroPlaca}</td>
-              <td className="border p-2">{v.tipoTransporte}</td>
+            <tr key={v.numeroplaca} className="hover:bg-gray-50">
+              <td className="border p-2">{v.numeroplaca}</td>
+              <td className="border p-2">{v.tipotransporte}</td>
               <td className="border p-2">{v.vigencia}</td>
               <td className="border p-2 text-center">
                 <input
                   type="checkbox"
                   checked={v.activo}
                   onChange={(e) =>
-                    toggleActivo(v.numeroPlaca, e.target.checked)
+                    toggleActivo(v.numeroplaca, e.target.checked)
                   }
                   className="w-5 h-5"
                 />

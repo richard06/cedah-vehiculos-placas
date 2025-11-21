@@ -60,7 +60,7 @@ export default function ValidatePlaca() {
            <div className="flex shadow-md rounded-md overflow-hidden h-14 border border-gray-200 bg-white">
                 {/* Icono lateral izquierdo */}
                 <div className="bg-[#691C32] w-16 flex items-center justify-center flex-shrink-0">
-                    <Car className="text-white w-6 h-6" />
+                    <CarFront className="text-white w-6 h-6" />
                 </div>
              <input
                     type="text"
@@ -126,11 +126,8 @@ export default function ValidatePlaca() {
                       <Calendar className="w-5 h-5 text-gray-600" />
                       <span className="font-semibold text-gray-700">Vigencia:</span>
                       <span className="text-gray-900">
-                        {new Date(result.vehiculo.vigencia).toLocaleDateString('es-MX', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                          {new Date(result.vehiculo.vigencia).toISOString().split('T')[0]}
+
                       </span>
                     </div>
                   </div>

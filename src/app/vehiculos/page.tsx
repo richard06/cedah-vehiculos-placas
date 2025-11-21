@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from "react";
-// Importamos el componente Button y Badge de shadcn para la tabla
 import { Button } from "@/components/ui/button"; 
 import { Badge } from "@/components/ui/badge";
 import RegisterPlaca from "@/components/RegisterPlaca";
@@ -13,7 +12,7 @@ interface Vehiculo {
   vigencia: string;
   activo: boolean;
 }
-
+// ******* Muestra la tabla donde vienen todos los vehiculos *******
 export default function VehiculosPage() {
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +70,8 @@ export default function VehiculosPage() {
           <h2 className="text-2xl font-semibold mb-4 text-gray-700">Listado de Placas Registradas</h2>
           
           {/* Tabla Estilizada */}
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
+          <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200 ">
+            <div className="max-h-96 overflow-y-auto"> {/* Contenedor para el scroll vertical */}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -108,6 +108,7 @@ export default function VehiculosPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -116,7 +117,7 @@ export default function VehiculosPage() {
       </div>
          {/* Columna del Formulario de Registro (Ocupa el espacio restante) */}
         <div >
-          <RegisterPlaca />
+          <RegisterPlaca onRegistrationSuccess={cargarVehiculos}  />
         </div>
     </div>
   );

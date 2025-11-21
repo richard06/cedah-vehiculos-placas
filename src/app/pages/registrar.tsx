@@ -85,11 +85,7 @@ export default function RegisterPage() {
                   required
                 >
                   <option value="">Seleccione un tipo...</option>
-                  <option value="Camión">Camión</option>
-                  <option value="Camioneta">Camioneta</option>
-                  <option value="Tractocamión">Tractocamión</option>
-                  <option value="Remolque">Remolque</option>
-                  <option value="Semirremolque">Semirremolque</option>
+                  <option value="AUTOTANQUE">AUTOTANQUE</option>
                 </select>
               </div>
 

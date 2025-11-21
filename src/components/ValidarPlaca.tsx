@@ -8,7 +8,7 @@ import { Search, CheckCircle, XCircle, AlertCircle, Calendar, Car, CarFront } fr
 interface ValidationResult {
   found: boolean;
   vehiculo?: {
-    numeroplaca: number;
+    numeroplaca: string;
     tipotransporte: string;
     vigencia: string;
     activo: boolean;

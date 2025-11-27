@@ -1,4 +1,4 @@
-// components/NavBar.tsx
+"use client";
 import { useSession, signOut } from "next-auth/react";
 
 export default function NavBar() {
@@ -16,9 +16,7 @@ export default function NavBar() {
             Cerrar sesión
           </button>
         </div>
-      ) : (
-        <div />
-      )}
+      ) : null}
     </header>
   );
 }

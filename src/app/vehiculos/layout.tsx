@@ -1,19 +1,27 @@
-import NavBar from "@/components/NavBar";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function VehiculosLayout({
+import NavBar from "@/components/NavBar";
+import { useSessionAuth } from "@/hooks/useSessionAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function VehiculosLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isAuthenticated, loading } = useSessionAuth();
+  const router = useRouter();
 
-  // 🔐 Validación de sesión en servidor
-  const session = await getServerSession(authOptions);
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
-  if (!session) {
-    redirect("/login");
+  // No mostrar nada si no está autenticado
+  if (!loading && !isAuthenticated) {
+    return null;
   }
 
   return (

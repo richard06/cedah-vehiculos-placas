@@ -1,26 +1,39 @@
 import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getAllVehiculos } from "@/lib/db";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { getServerSession } from "next-auth/next";
+import { jwtVerify } from "jose";
 
-export async function GET() {
-  // 🔐 Validar sesión
-  const session = await getServerSession(authOptions);
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || "tu-secreto-super-seguro"
+);
 
-  if (!session) {
+export async function GET(request: NextRequest) {
+  // 🔐 Validar token desde la cookie
+  const token = request.cookies.get("auth-token")?.value;
+
+  if (!token) {
     return NextResponse.json(
-      { error: "No autorizado" },
+      { error: "No autorizado - Token no encontrado" },
       { status: 401 }
     );
   }
 
   try {
+    // Verificar y decodificar el JWT con jose
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+
+    // Si llegamos aquí, el token es válido
+    // Opcionalmente puedes usar los datos del usuario: payload.id, payload.email, etc.
+
     const vehiculos = await getAllVehiculos();
     return NextResponse.json(vehiculos);
-  } catch (err) {
+    
+  } catch (error) {
+    console.error("Error validando token:", error);
+    // Token inválido o expirado
     return NextResponse.json(
-      { error: "Error obteniendo vehículos" },
-      { status: 500 }
+      { error: "No autorizado - Token inválido o expirado" },
+      { status: 401 }
     );
   }
 }

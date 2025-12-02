@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 interface RegisterPlacaProps {
   onRegistrationSuccess: () => void;
@@ -72,7 +73,8 @@ export default function RegisterPlaca({
     setResult(null);
 
     try {
-      const response = await fetch("/api/registrar", {
+      // ✅ Usar fetchWithAuth en lugar de fetch normal
+      const response = await fetchWithAuth("/api/registrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,7 +88,6 @@ export default function RegisterPlaca({
 
       if (response.ok) {
         onRegistrationSuccess();
-
         handleSuccess(data.message || "Placa registrada exitosamente.");
       } else {
         setResult({

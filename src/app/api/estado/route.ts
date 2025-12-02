@@ -1,55 +1,55 @@
 import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { sql } from "@vercel/postgres";
+import { jwtVerify } from "jose";
 
-export async function PUT(request: Request) {
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || "una_llave_muy_secreta"
+);
+
+export async function PUT(request: NextRequest) {
+  // 🔐 Validar token desde el header Authorization
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (!token) {
+    return NextResponse.json(
+      { error: "No autorizado" },
+      { status: 401 }
+    );
+  }
+
   try {
-    let body;
+    // Verificar JWT con jose
+    await jwtVerify(token, JWT_SECRET);
 
-    // Protegerse contra body vacío o mal formado
-    try {
-      body = await request.json();
-    } catch {
+    // Obtener datos del body
+    const { numeroplaca, activo } = await request.json();
+
+    if (!numeroplaca) {
       return NextResponse.json(
-        { error: "El body debe ser JSON válido" },
+        { error: "Número de placa requerido" },
         { status: 400 }
       );
     }
 
-    const { numeroplaca, activo } = body;
-
-    if (!numeroplaca || typeof activo !== "boolean") {
-      return NextResponse.json(
-        { error: "numeroplaca y activo son requeridos" },
-        { status: 400 }
-      );
-    }
-
-    // Forzar convertir placa a string siempre
-    const placa = String(numeroplaca).toUpperCase().trim();
-
-    const result = await sql`
+    // Actualizar estado en la base de datos
+    await sql`
       UPDATE vehiculo
-      SET activo = ${activo}, updated_at = NOW()
-      WHERE numeroplaca = ${placa}
-      RETURNING *;
+      SET activo = ${activo}
+      WHERE numeroplaca = ${numeroplaca}
     `;
 
-    if (result.rowCount === 0) {
-      return NextResponse.json(
-        { error: "Vehículo no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      message: "Estado actualizado correctamente",
-      vehiculo: result.rows[0],
+    return NextResponse.json({ 
+      success: true,
+      message: "Estado actualizado correctamente" 
     });
 
-  } catch (error: any) {
-    console.error("Error al cambiar estado del vehículo:", error);
+  } catch (error) {
+    console.error("Error actualizando estado:", error);
+    
     return NextResponse.json(
-      { error: error.message || "Error interno del servidor" },
+      { error: "Error actualizando estado del vehículo" },
       { status: 500 }
     );
   }

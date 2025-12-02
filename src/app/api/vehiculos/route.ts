@@ -4,7 +4,7 @@ import { getAllVehiculos } from "@/lib/db";
 import { jwtVerify } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "tu-secreto-super-seguro"
+  process.env.NEXTAUTH_SECRET || "una_llave_muy_secreta"
 );
 
 export async function GET(request: NextRequest) {

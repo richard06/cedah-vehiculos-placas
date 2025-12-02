@@ -4,7 +4,7 @@ import { sql } from "@vercel/postgres";
 import { jwtVerify } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "tu-secreto-super-seguro"
+  process.env.NEXTAUTH_SECRET || "una_llave_muy_secreta"
 );
 
 export async function PUT(request: NextRequest) {
@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
 
     // Actualizar estado en la base de datos
     await sql`
-      UPDATE vehiculos
+      UPDATE vehiculo
       SET activo = ${activo}
       WHERE numeroplaca = ${numeroplaca}
     `;

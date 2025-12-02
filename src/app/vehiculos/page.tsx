@@ -90,20 +90,7 @@ export default function VehiculosPage() {
           Gestión de Vehículos
         </h1>
         
-        {/* <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
-            Hola, <strong>{user?.name}</strong>
-          </span>
-          <Button
-            onClick={logout}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Cerrar Sesión
-          </Button>
-        </div> */}
+    
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">

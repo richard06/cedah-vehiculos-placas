@@ -1,33 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSessionAuth } from "@/hooks/useSessionAuth";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export default function NavBar() {
   const { user, logout } = useSessionAuth();
+  const [mounted, setMounted] = useState(false);
 
-  // Para evitar hydration mismatch
-  const [isClient, setIsClient] = useState(false);
-
+  // Evitar error de hidratación: solo renderizar después del mount
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   return (
     <nav className="bg-white shadow-md border-b">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
-          {/* Logo */}
+          {/* Logo/Título */}
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-indigo-600">
               Sistema de Vehículos
             </h1>
           </div>
 
-          {/* No renderizar nada del usuario hasta que el cliente esté montado */}
-          {isClient && user && (
+          {/* Usuario y Logout - Solo mostrar después de montar */}
+          {mounted && user && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <User className="w-4 h-4" />

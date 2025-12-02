@@ -8,8 +8,9 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export async function PUT(request: NextRequest) {
-  // 🔐 Validar token desde la cookie
-  const token = request.cookies.get("auth-token")?.value;
+  // 🔐 Validar token desde el header Authorization
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '');
 
   if (!token) {
     return NextResponse.json(

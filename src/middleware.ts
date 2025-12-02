@@ -7,54 +7,59 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth-token')?.value;
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/vehiculos');
+  const path = request.nextUrl.pathname;
+  
+  // Solo validar rutas de API, no páginas HTML
+  const isApiRoute = path.startsWith('/api/');
+  
+  if (!isApiRoute) {
+    // Dejar pasar todas las páginas (vehiculos, login, etc.)
+    // La protección se hace en el cliente con useSessionAuth
+    console.log('✅ Permitiendo acceso a página:', path);
+    return NextResponse.next();
+  }
 
-  console.log('🔍 Middleware ejecutándose:', {
-    path: request.nextUrl.pathname,
+  // 🔐 Para APIs, buscar token en header Authorization
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '');
+  
+  // Permitir acceso a endpoints de auth sin token
+  if (path.startsWith('/api/auth/')) {
+    console.log('✅ Permitiendo acceso a /api/auth');
+    return NextResponse.next();
+  }
+
+  console.log('🔍 Validando API:', {
+    path,
     hasToken: !!token,
-    isAuthPage,
-    isProtectedRoute
   });
 
-  // Verificar si el token es válido
-  let isValidToken = false;
-  if (token) {
-    try {
-      // Usar jose en lugar de jsonwebtoken (compatible con Edge Runtime)
-      await jwtVerify(token, JWT_SECRET);
-      isValidToken = true;
-      console.log('✅ Token válido');
-    } catch (error) {
-      console.log('❌ Token inválido:', error);
-      isValidToken = false;
-    }
+  // Verificar si el token es válido para otras APIs
+  if (!token) {
+    console.log('❌ Token no encontrado en API');
+    return NextResponse.json(
+      { error: 'No autorizado - Token requerido' },
+      { status: 401 }
+    );
   }
 
-  // Si no hay token válido y está en ruta protegida, redirigir a login
-  if (!isValidToken && isProtectedRoute) {
-    console.log('🚫 Bloqueando acceso a ruta protegida, redirigiendo a /login');
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('auth-token');
-    return response;
+  try {
+    await jwtVerify(token, JWT_SECRET);
+    console.log('✅ Token válido para API');
+    return NextResponse.next();
+  } catch (error) {
+    console.log('❌ Token inválido:', error);
+    return NextResponse.json(
+      { error: 'No autorizado - Token inválido' },
+      { status: 401 }
+    );
   }
-
-  // Si hay token válido y está en login, redirigir a vehículos
-  if (isValidToken && isAuthPage) {
-    console.log('✅ Usuario autenticado en /login, redirigiendo a /vehiculos');
-    return NextResponse.redirect(new URL('/vehiculos', request.url));
-  }
-
-  console.log('✅ Permitiendo acceso');
-  return NextResponse.next();
 }
 
 export const config = {
+  // Solo interceptar rutas de API y páginas protegidas
   matcher: [
-    '/vehiculos/:path*', 
-    '/login',
-    '/api/vehiculos/:path*',
-    '/api/estado/:path*',
+    '/api/:path*',
+    '/vehiculos/:path*',
   ],
 };

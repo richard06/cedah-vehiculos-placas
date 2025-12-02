@@ -32,20 +32,14 @@ export default function LoginPage() {
         return;
       }
 
-      // Guardar usuario en sessionStorage
-      saveSession(data.user);
+      // Guardar usuario Y token en sessionStorage
+      saveSession(data.user, data.token);
 
       console.log("✅ Login exitoso:", data.user);
-      console.log("📦 Cookies actuales:", document.cookie);
-      
-      // Esperar a que la cookie se establezca en el navegador
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      console.log("📦 Cookies después de esperar:", document.cookie);
       console.log("🔄 Redirigiendo a /vehiculos...");
       
-      // Usar window.location para forzar recarga y que el middleware valide la cookie
-      window.location.href = "/vehiculos";
+      // Usar router.push para navegación en Next.js
+      router.push("/vehiculos");
     } catch (err) {
       console.error("Error en login:", err);
       setError("Error de conexión. Intenta de nuevo.");

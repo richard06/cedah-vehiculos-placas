@@ -87,9 +87,12 @@ export function useSessionAuth() {
   };
 
   // Guardar sesión en sessionStorage
-  const saveSession = (userData: User) => {
+  const saveSession = (userData: User, token?: string) => {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(userData));
     sessionStorage.setItem(SESSION_TIMESTAMP, Date.now().toString());
+    if (token) {
+      sessionStorage.setItem('auth_token', token); // 🔑 Guardar también el token
+    }
     setUser(userData);
   };
 
@@ -97,6 +100,7 @@ export function useSessionAuth() {
   const clearSession = () => {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_TIMESTAMP);
+    sessionStorage.removeItem('auth_token'); // 🔑 Limpiar también el token
     setUser(null);
   };
 
@@ -138,6 +142,12 @@ export function useSessionAuth() {
     return () => clearInterval(interval);
   }, [user, router]);
 
+  // 🔑 Función para obtener el token desde sessionStorage
+  const getToken = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem('auth_token');
+  };
+
   // ⚠️ REMOVIDO: No ejecutar logout en beforeunload
   // El sessionStorage se limpia automáticamente al cerrar la pestaña
   // No necesitamos hacer fetch de logout aquí porque causa problemas
@@ -148,5 +158,6 @@ export function useSessionAuth() {
     isAuthenticated: !!user,
     saveSession,
     logout,
+    getToken, // 🔑 Exportar función para obtener token
   };
 }

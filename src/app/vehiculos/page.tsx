@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import RegisterPlaca from "@/components/RegisterPlaca";
 import { Check, X, Truck, LogOut } from "lucide-react";
 import { useSessionAuth } from "@/hooks/useSessionAuth";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 interface Vehiculo {
   numeroplaca: string;
@@ -34,9 +35,7 @@ export default function VehiculosPage() {
 
   const cargarVehiculos = async () => {
     try {
-      const res = await fetch("/api/vehiculos", {
-        credentials: 'include', // 👈 Incluir cookies HttpOnly
-      });
+      const res = await fetchWithAuth("/api/vehiculos");
 
       if (res.status === 401) {
         router.push("/login");
@@ -54,10 +53,9 @@ export default function VehiculosPage() {
 
   const toggleActivo = async (numeroplaca: string, nuevoEstado: boolean) => {
     try {
-      await fetch("/api/estado", {
+      await fetchWithAuth("/api/estado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include', // 👈 Incluir cookies HttpOnly
         body: JSON.stringify({ numeroplaca, activo: nuevoEstado }),
       });
 
@@ -92,7 +90,7 @@ export default function VehiculosPage() {
           Gestión de Vehículos
         </h1>
         
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600">
             Hola, <strong>{user?.name}</strong>
           </span>
@@ -105,7 +103,7 @@ export default function VehiculosPage() {
             <LogOut className="w-4 h-4" />
             Cerrar Sesión
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">

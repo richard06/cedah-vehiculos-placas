@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       .setIssuedAt()
       .sign(JWT_SECRET);
 
-    // Crear respuesta con cookie HttpOnly
+    // Crear respuesta SIN cookie (solo devolver el token al cliente)
     const response = NextResponse.json({
       success: true,
       user: {
@@ -67,14 +67,8 @@ export async function POST(request: Request) {
       token, // El cliente guardará esto en sessionStorage
     });
 
-    // Cookie de sesión (sin expires = se borra al cerrar navegador)
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      // NO poner maxAge ni expires = cookie de sesión
-    });
+    // ❌ NO establecer cookie - solo usar sessionStorage
+    // La cookie hace que persista entre pestañas
 
     return response;
   } catch (error) {

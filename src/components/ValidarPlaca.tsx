@@ -114,11 +114,10 @@ export default function ValidatePlaca() {
                   </div>
 <div className="border border-green-600 rounded-lg overflow-hidden">
 
-<div className="border border-green-600 rounded-lg p-4">
-
-  <div className="flex items-center gap-3 mb-4">
+  {/* ENCABEZADO VERDE */}
+  <div className="bg-green-700 text-white px-4 py-3 flex items-center gap-3">
     <svg
-      className="w-6 h-6 text-green-700"
+      className="w-6 h-6 text-white"
       fill="currentColor"
       viewBox="0 0 20 20"
     >
@@ -129,28 +128,24 @@ export default function ValidatePlaca() {
       />
     </svg>
 
-    <h4 className="text-lg font-bold text-green-900">
+    <span className="font-semibold text-lg">
       Validación Exitosa - Placa Registrada en CNE
-    </h4>
+    </span>
   </div>
 
-  {/* Contenido */}
-  <div className="bg-white p-4 rounded-md space-y-3 border border-gray-200">
+  {/* CONTENIDO */}
+  <div className="bg-white p-5 space-y-3">
 
     <div className="flex items-center gap-2">
       <Car className="w-5 h-5 text-gray-700" />
       <span className="font-semibold text-gray-800">Placa:</span>
-      <span className="text-gray-900 font-mono">
-        {result.vehiculo.numeroplaca}
-      </span>
+      <span className="text-gray-900 font-mono">{result.vehiculo.numeroplaca}</span>
     </div>
 
     <div className="flex items-center gap-2">
       <Car className="w-5 h-5 text-gray-700" />
       <span className="font-semibold text-gray-800">Tipo Transporte:</span>
-      <span className="text-gray-900">
-        {result.vehiculo.tipotransporte}
-      </span>
+      <span className="text-gray-900">{result.vehiculo.tipotransporte}</span>
     </div>
 
     <div className="flex items-center gap-2">
@@ -161,8 +156,8 @@ export default function ValidatePlaca() {
       </span>
     </div>
 
-    {/* Estatus */}
-    <div className="pt-4 border-t border-gray-300">
+    {/* Estatus Actual */}
+    <div className="pt-4 border-t border-gray-200">
       <div className="flex items-center gap-2 text-green-700 font-semibold text-lg">
         <svg
           className="w-6 h-6 text-green-700"

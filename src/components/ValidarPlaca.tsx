@@ -2,13 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, AlertCircle, CarFront, ShieldCheck } from 'lucide-react';
+import {
+  CheckCircle,
+  AlertCircle,
+  CarFront,
+  ShieldCheck
+} from 'lucide-react';
 import { FriendlyCaptchaSDK } from '@friendlycaptcha/sdk';
 
 /* =========================
    CONFIGURACIÓN CAPTCHA
 ========================= */
-const SITE_KEY = 'FCMH682ENJIB14E2'; // 👈 DEBE empezar con pk_
+const SITE_KEY = 'FCMH682ENJIB14E2';
 
 /* =========================
    TIPOS
@@ -19,12 +24,15 @@ interface ValidationResult {
     numeroplaca: string;
     tipotransporte: string;
     vigencia: string;
+    activo?: boolean;
+    esVigente?: boolean;
+    diasRestantes?: number;
   };
   message?: string;
 }
 
 /* =========================
-   COMPONENTE PRINCIPAL
+   COMPONENTE
 ========================= */
 export default function ValidarPlaca() {
   const [numeroplaca, setNumeroPlaca] = useState('');
@@ -37,18 +45,16 @@ export default function ValidarPlaca() {
 
   const captchaContainerRef = useRef<HTMLDivElement>(null);
   const captchaWidgetRef = useRef<any>(null);
-  const captchaSdkRef = useRef<any>(null); // 👈 SDK SOLO EN CLIENTE
+  const captchaSdkRef = useRef<any>(null);
 
   /* =========================
-     INICIALIZAR CAPTCHA
+     CAPTCHA
   ========================= */
   useEffect(() => {
-    // 🚨 Esto garantiza que solo corre en el navegador
     if (typeof window === 'undefined') return;
     if (!showCaptcha || !captchaStarted || !captchaContainerRef.current) return;
     if (captchaWidgetRef.current) return;
 
-    // Crear SDK SOLO aquí
     if (!captchaSdkRef.current) {
       captchaSdkRef.current = new FriendlyCaptchaSDK({
         apiEndpoint: 'global'
@@ -56,12 +62,11 @@ export default function ValidarPlaca() {
     }
 
     captchaWidgetRef.current =
-    captchaSdkRef.current.createWidget({
-    element: captchaContainerRef.current,
-    sitekey: SITE_KEY,
-    startMode: 'auto' // 👈 clave
-  });
-
+      captchaSdkRef.current.createWidget({
+        element: captchaContainerRef.current,
+        sitekey: SITE_KEY,
+        startMode: 'auto'
+      });
 
     const handleSolved = (e: any) => {
       setCaptchaToken(e.detail.response);
@@ -113,11 +118,8 @@ export default function ValidarPlaca() {
       });
     } finally {
       setLoading(false);
-      if (captchaWidgetRef.current) {
-        captchaWidgetRef.current.reset();
-      }
-      setCaptchaToken(null);
       setCaptchaStarted(false);
+      setCaptchaToken(null);
     }
   };
 
@@ -126,24 +128,25 @@ export default function ValidarPlaca() {
   ========================= */
   return (
     <Card className="shadow-lg">
-      <CardContent className="p-6">
+      <CardContent className="p-6 space-y-6">
 
+        {/* FORM */}
         <form onSubmit={handleValidate} className="space-y-4">
 
-          {/* INPUT PLACA */}
-          <div className="flex shadow-md rounded-md overflow-hidden h-14 border border-gray-200 bg-white">
+          {/* INPUT */}
+          <div className="flex shadow-md rounded-md overflow-hidden h-14 border bg-white">
             <div className="bg-[#691C32] w-16 flex items-center justify-center">
               <CarFront className="text-white w-6 h-6" />
             </div>
 
             <input
-              type="text"
               value={numeroplaca}
               onChange={(e) => {
                 const value = e.target.value.toUpperCase();
                 setNumeroPlaca(value);
+                setResult(null);
 
-                if (value.trim().length >= 5) {
+                if (value.length >= 5) {
                   setShowCaptcha(true);
                 } else {
                   setShowCaptcha(false);
@@ -151,72 +154,86 @@ export default function ValidarPlaca() {
                   setCaptchaToken(null);
                 }
               }}
-              placeholder="INGRESE NÚMERO DE PLACA (EJ: 58AP1G)"
-              className="flex-1 px-6 text-gray-600 placeholder-gray-400 outline-none font-semibold uppercase text-sm tracking-wide"
-              disabled={loading}
+              placeholder="INGRESE NÚMERO DE PLACA"
+              className="flex-1 px-6 outline-none font-semibold"
             />
           </div>
 
-          {/* TARJETA CLICK TO START */}
+          {/* CLICK TO START */}
           {showCaptcha && !captchaStarted && (
             <div
               onClick={() => setCaptchaStarted(true)}
-              className="cursor-pointer border border-gray-300 rounded-md p-4 flex items-center gap-4 bg-white hover:bg-gray-50 transition"
+              className="cursor-pointer border rounded-md p-4 flex items-center gap-4 hover:bg-gray-50"
             >
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6 text-gray-700" />
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-semibold text-gray-800">
-                  Anti-Robot Verification
-                </span>
-                <span className="text-sm text-gray-600">
+              <ShieldCheck className="w-8 h-8 text-gray-700" />
+              <div>
+                <p className="font-semibold">Anti-Robot Verification</p>
+                <p className="text-sm text-gray-600">
                   Click to start verification
-                </span>
+                </p>
               </div>
-
               <span className="ml-auto text-xs text-gray-400">
                 FriendlyCaptcha ↗
               </span>
             </div>
           )}
 
-          {/* CAPTCHA REAL */}
+          {/* CAPTCHA */}
           {showCaptcha && captchaStarted && (
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center">
               <div ref={captchaContainerRef} />
             </div>
           )}
 
-          {/* BOTÓN VALIDAR */}
+          {/* BOTÓN */}
           {captchaToken && (
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center">
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-[#8B2C4A] text-white rounded-md hover:bg-[#691C32] disabled:opacity-50 transition-colors font-medium flex items-center gap-2"
+                className="px-6 py-2 bg-[#8B2C4A] text-white rounded-md"
               >
                 {loading ? 'Validando...' : 'Validar'}
               </button>
             </div>
           )}
-
         </form>
 
-        {/* RESULTADO */}
+        {/* RESULTADOS */}
         {result && (
-          <div className="mt-6">
-            {result.found ? (
-              <div className="bg-green-200 p-4 rounded flex gap-2">
-                <CheckCircle /> Placa válida
+          <>
+            {result.found && result.vehiculo ? (
+              <div className="border border-green-600 rounded-lg overflow-hidden">
+                <div className="bg-green-600 text-white px-4 py-3 flex gap-2 items-center">
+                  <CheckCircle />
+                  <span className="font-semibold">
+                    Placa válida
+                  </span>
+                </div>
+
+                <div className="bg-white p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <p><strong>Placa:</strong> {result.vehiculo.numeroplaca}</p>
+                  <p><strong>Tipo:</strong> {result.vehiculo.tipotransporte}</p>
+                  <p><strong>Vigencia:</strong> {result.vehiculo.vigencia}</p>
+
+                  {typeof result.vehiculo.diasRestantes === 'number' && (
+                    <p>
+                      <strong>Días restantes:</strong>{' '}
+                      {result.vehiculo.diasRestantes}
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="bg-red-200 p-4 rounded flex gap-2">
-                <AlertCircle /> Placa no encontrada
+              <div className="bg-red-200 border border-red-300 rounded p-4 flex gap-2">
+                <AlertCircle />
+                <span>
+                  {result.message ||
+                    'Datos de placa no encontrados'}
+                </span>
               </div>
             )}
-          </div>
+          </>
         )}
 
       </CardContent>

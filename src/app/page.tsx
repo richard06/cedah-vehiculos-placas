@@ -191,7 +191,24 @@ export default function Home() {
 
             {/* Consulta pública */}
             <div className="text-center py-3 border-t">
-              <small className="text-gray-500">Consulta pública {new Date().toLocaleString()}</small>
+              <small className="text-gray-500 text-[15px]">
+  Consulta pública{' '}
+  {new Date()
+    .toLocaleString('en-US', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    })
+    .replace(',', '')
+    .toUpperCase()}
+</small>
+
+
             </div>
 
             {/* Validar Placa */}

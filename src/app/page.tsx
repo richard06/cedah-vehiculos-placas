@@ -235,8 +235,8 @@ export default function Home() {
       <footer className="bg-[var(--maroon)] text-white mt-auto">
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="w-50 h-40 bg-[var(--maroon)] rounded-full flex items-center justify-center">
-              <Image src="https://cedah.energia.gob.mx/demo1/media/logos/logo_blanco.svg"
+            <div className="w-50 h-50 bg-[var(--maroon)] rounded-full flex items-center justify-center">
+              <Image src="https://framework-gb.cdn.gob.mx/gobmx/img/logo_blanco.svg"
                 alt="Logo"
                   width={30}
                     height={20}

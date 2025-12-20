@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     if (!vehiculo) {
       return NextResponse.json(
-        { found: false, message: "Placa no encontrada en el sistema" },
+        { found: false, message: "Error: Datos de placa no registrados en CNE" },
         { status: 404 }
       );
     }

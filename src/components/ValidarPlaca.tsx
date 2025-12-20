@@ -24,16 +24,24 @@ interface ValidationResult {
     numeroplaca: string;
     tipotransporte: string;
     vigencia: string;
-    activo?: boolean;
-    esVigente?: boolean;
-    diasRestantes?: number;
   };
   message?: string;
 }
 
-/* =========================
-   COMPONENTE
-========================= */
+/* Tipos mínimos FriendlyCaptcha (sin any) */
+type CaptchaWidget = {
+  destroy: () => void;
+};
+
+type CaptchaSDK = {
+  createWidget: (options: {
+    element: HTMLElement;
+    sitekey: string;
+    startMode?: 'manual' | 'auto';
+    language?: string;
+  }) => CaptchaWidget;
+};
+
 export default function ValidarPlaca() {
   const [numeroplaca, setNumeroPlaca] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,32 +52,37 @@ export default function ValidarPlaca() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const captchaContainerRef = useRef<HTMLDivElement>(null);
-  const captchaWidgetRef = useRef<any>(null);
-  const captchaSdkRef = useRef<any>(null);
+  const captchaWidgetRef = useRef<CaptchaWidget | null>(null);
+  const captchaSdkRef = useRef<CaptchaSDK | null>(null);
 
   /* =========================
-     CAPTCHA
+     CREAR CAPTCHA (SOLO AL DAR CLICK)
   ========================= */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!showCaptcha || !captchaStarted || !captchaContainerRef.current) return;
+    if (!captchaStarted || !captchaContainerRef.current) return;
+
+    // 🔴 CLAVE: si hay widget, NO creamos otro
     if (captchaWidgetRef.current) return;
 
     if (!captchaSdkRef.current) {
-      captchaSdkRef.current = new FriendlyCaptchaSDK({
-        apiEndpoint: 'global'
-      });
+      captchaSdkRef.current =
+        new FriendlyCaptchaSDK({
+          apiEndpoint: 'global'
+        }) as unknown as CaptchaSDK;
     }
 
     captchaWidgetRef.current =
       captchaSdkRef.current.createWidget({
         element: captchaContainerRef.current,
         sitekey: SITE_KEY,
-        startMode: 'auto'
+        startMode: 'manual',
+        language: 'en'
       });
 
-    const handleSolved = (e: any) => {
-      setCaptchaToken(e.detail.response);
+    const handleSolved = (e: Event) => {
+      const custom = e as CustomEvent<{ response: string }>;
+      setCaptchaToken(custom.detail.response);
     };
 
     captchaContainerRef.current.addEventListener(
@@ -82,10 +95,8 @@ export default function ValidarPlaca() {
         'frc:widget.complete',
         handleSolved
       );
-      captchaWidgetRef.current?.destroy();
-      captchaWidgetRef.current = null;
     };
-  }, [showCaptcha, captchaStarted]);
+  }, [captchaStarted]);
 
   /* =========================
      SUBMIT
@@ -118,8 +129,7 @@ export default function ValidarPlaca() {
       });
     } finally {
       setLoading(false);
-      setCaptchaStarted(false);
-      setCaptchaToken(null);
+      // ❗ NO tocamos captcha aquí
     }
   };
 
@@ -130,7 +140,6 @@ export default function ValidarPlaca() {
     <Card className="shadow-lg">
       <CardContent className="p-6 space-y-6">
 
-        {/* FORM */}
         <form onSubmit={handleValidate} className="space-y-4">
 
           {/* INPUT */}
@@ -146,13 +155,15 @@ export default function ValidarPlaca() {
                 setNumeroPlaca(value);
                 setResult(null);
 
-                if (value.length >= 5) {
-                  setShowCaptcha(true);
-                } else {
-                  setShowCaptcha(false);
-                  setCaptchaStarted(false);
-                  setCaptchaToken(null);
+                // 🔑 AQUÍ SÍ DESTRUIMOS EL WIDGET
+                if (captchaWidgetRef.current) {
+                  captchaWidgetRef.current.destroy();
+                  captchaWidgetRef.current = null;
                 }
+
+                setCaptchaToken(null);
+                setCaptchaStarted(false);
+                setShowCaptcha(value.length >= 5);
               }}
               placeholder="INGRESE NÚMERO DE PLACA"
               className="flex-1 px-6 outline-none font-semibold"
@@ -167,7 +178,9 @@ export default function ValidarPlaca() {
             >
               <ShieldCheck className="w-8 h-8 text-gray-700" />
               <div>
-                <p className="font-semibold">Anti-Robot Verification</p>
+                <p className="font-semibold">
+                  Anti-Robot Verification
+                </p>
                 <p className="text-sm text-gray-600">
                   Click to start verification
                 </p>
@@ -178,8 +191,8 @@ export default function ValidarPlaca() {
             </div>
           )}
 
-          {/* CAPTCHA */}
-          {showCaptcha && captchaStarted && (
+          {/* CAPTCHA REAL */}
+          {captchaStarted && (
             <div className="flex justify-center">
               <div ref={captchaContainerRef} />
             </div>
@@ -199,7 +212,7 @@ export default function ValidarPlaca() {
           )}
         </form>
 
-        {/* RESULTADOS */}
+        {/* RESULTADO */}
         {result && (
           <>
             {result.found && result.vehiculo ? (
@@ -211,11 +224,38 @@ export default function ValidarPlaca() {
                   </span>
                 </div>
 
-                <div className="bg-white p-6 grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div className="bg-white p-6 grid gap-3">
                   <p><strong>Placa:</strong> {result.vehiculo.numeroplaca}</p>
                   <p><strong>Tipo:</strong> {result.vehiculo.tipotransporte}</p>
-                  <p><strong>Vigencia:</strong>{' '}
-                  {new Date(result.vehiculo.vigencia).toISOString().split('T')[0]}</p>
+                  <p>
+                    <strong>Vigencia:</strong>{' '}
+                    {new Date(result.vehiculo.vigencia)
+                      .toISOString()
+                      .split('T')[0]}
+                  </p>
+                  <p><strong>Estatus de Actual de la Unidad:</strong></p>
+                  <div className="flex items-center gap-3">
+  {/* CÍRCULO VERDE */}
+  <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center">
+    <svg
+      className="w-4 h-4 text-white"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path
+        fillRule="evenodd"
+        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  </div>
+
+  {/* TEXTO AUTORIZADO */}
+  <p className="text-green-700 font-bold text-2xl tracking-wide">
+    AUTORIZADO
+  </p>
+</div>
+
                 </div>
               </div>
             ) : (

@@ -135,7 +135,7 @@ export default function Home() {
                   </svg>
                   Productos Autorizados
                   </h6>
-              <Badge className="bg-gray-600 hover:bg-gray-600 text-white px-3 py-2 text-sm">
+              <Badge className="bg-gray-600 hover:bg-gray-600 text-white px-3 py-2 text-sm rounded-sm">
 
   {/* Ícono pequeño de gota (contorno blanco, sin relleno) */}
   <svg
@@ -152,7 +152,7 @@ export default function Home() {
 
   GLP
 
-  {/* Check igual que antes */}
+ 
   <svg className="w-5 h-5 ml-2 inline" fill="currentColor" viewBox="0 0 20 20">
     <path
       fillRule="evenodd"
@@ -250,7 +250,7 @@ export default function Home() {
       <footer className="bg-[var(--maroon)] text-white mt-auto">
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="w-50 h-50 bg-[var(--maroon)] rounded-full flex items-center justify-center">
+            <div className="w-50 h-50 bg-[var(--maroon)] rounded-full flex items-center">
               <Image src="https://framework-gb.cdn.gob.mx/gobmx/img/logo_blanco.svg"
                 alt="Logo"
                   width={30}

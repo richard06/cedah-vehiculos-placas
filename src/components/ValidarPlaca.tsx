@@ -213,7 +213,9 @@ export default function ValidarPlaca() {
         </form>
 
         {/* RESULTADO */}
-{result && result.found && result.vehiculo && (
+        {result && (
+          <>
+            {result && result.found && result.vehiculo && (
   <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
 
     {/* HEADER */}
@@ -284,18 +286,6 @@ export default function ValidarPlaca() {
   </div>
 )}
 
-
-                </div>
-              </div>
-            ) : (
-              <div className="bg-red-200 border border-red-300 rounded p-4 flex gap-2">
-                <AlertCircle />
-                <span>
-                  {result.message ||
-                    'Datos de placa no encontrados'}
-                </span>
-              </div>
-            )}
           </>
         )}
 

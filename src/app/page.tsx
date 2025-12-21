@@ -105,7 +105,7 @@ export default function Home() {
                   Vigencia
                 </div>
                 <h5 className="font-semibold text-gray-900">
-                  Del 2014-03-06<br />al 2046-04-27
+                  Del 2014-03-06 al 2046-04-27
                 </h5>
               </div>
             </div>

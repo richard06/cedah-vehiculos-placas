@@ -219,7 +219,7 @@ export default function ValidarPlaca() {
   <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
 
     {/* HEADER */}
-    <div className="bg-white-600 text-white px-4 py-4 flex items-center gap-3">
+    <div className="bg-green-600 text-white px-4 py-4 flex items-center gap-3">
       <CheckCircle className="w-6 h-6 flex-shrink-0" />
       <span className="font-semibold text-base sm:text-lg leading-tight">
         Validación Exitosa – Placa Registrada en CNE
@@ -259,9 +259,8 @@ export default function ValidarPlaca() {
           Estatus Actual de la Unidad:
         </p>
 
-        <div className="flex items-center gap-3 flex-wrap">
           {/* CÍRCULO */}
-          <div className="w-9 h-9 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
             <svg
               className="w-4 h-4 text-white"
               fill="currentColor"
@@ -279,7 +278,6 @@ export default function ValidarPlaca() {
           <span className="text-green-700 font-bold text-xl sm:text-2xl tracking-wide">
             AUTORIZADO
           </span>
-        </div>
       </div>
 
     </div>

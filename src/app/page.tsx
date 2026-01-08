@@ -29,7 +29,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 flex-1">
         <Card className="shadow-lg border-0 rounded-xl" >
-          <CardHeader className="bg-[var(--maroon)] text-white p-6 rounded-t-xl">
+          <CardHeader className="bg-[var(--maroon)] text-white p-1 rounded-t-xl">
             <h2 className="text-xl font-bold flex items-start gap-3">
               <svg className="w-6 h-6 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
@@ -177,9 +177,9 @@ export default function Home() {
   </CardHeader>
 
   <CardContent className="text-center py-6">
-    <h6 className="text-gray-600 mb-3">Información de Pólizas</h6>
+    <h6 className="text-gray-900 mb-3">Información de Pólizas</h6>
 
-    <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100 px-4 py-2">
+    <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100 px-4 py-2 rounded-sm">
       <svg className="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
       </svg>
@@ -217,7 +217,7 @@ export default function Home() {
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clipRule="evenodd" />
                 </svg> */}
                 <Search size={20} color="#691C32" />
-                Validar Placa
+                Validar Vehículo
               </h5>
 
               {/* <div className="max-w-2xl mx-auto">

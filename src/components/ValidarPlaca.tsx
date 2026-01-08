@@ -6,7 +6,9 @@ import {
   CheckCircle,
   AlertCircle,
   CarFront,
-  ShieldCheck
+  ShieldCheck,
+  Search,
+  SlidersHorizontal
 } from 'lucide-react';
 import { FriendlyCaptchaSDK } from '@friendlycaptcha/sdk';
 
@@ -50,6 +52,8 @@ export default function ValidarPlaca() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaStarted, setCaptchaStarted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  const [tipoBusqueda, setTipoBusqueda] = useState<'placa' | 'serie'>('placa');
 
   const captchaContainerRef = useRef<HTMLDivElement>(null);
   const captchaWidgetRef = useRef<CaptchaWidget | null>(null);
@@ -133,14 +137,49 @@ export default function ValidarPlaca() {
     }
   };
 
+  const resetCaptchaAndResult = () => {
+    setResult(null);
+
+    // 🔑 DESTRUIMOS EL WIDGET
+    if (captchaWidgetRef.current) {
+      captchaWidgetRef.current.destroy();
+      captchaWidgetRef.current = null;
+    }
+
+    setCaptchaToken(null);
+    setCaptchaStarted(false);
+    setShowCaptcha(false);
+  };
+
   /* =========================
      RENDER
   ========================= */
   return (
     <Card className="shadow-lg">
       <CardContent className="p-6 space-y-6">
+        {/* HEADER */}
 
         <form onSubmit={handleValidate} className="space-y-4">
+          {/* SELECT: Placa / Serie */}
+          <div className="flex shadow-md rounded-md overflow-hidden h-14 border bg-white">
+            <div className="bg-[#691C32] w-16 flex items-center justify-center">
+              <SlidersHorizontal className="text-white w-6 h-6" />
+            </div>
+
+            <select
+              value={tipoBusqueda}
+              onChange={(e) => {
+                const value = e.target.value as 'placa' | 'serie';
+                setTipoBusqueda(value);
+                setNumeroPlaca('');
+                resetCaptchaAndResult();
+              }}
+              className="flex-1 px-6 outline-none font-semibold bg-white"
+            >
+              <option value="placa">Placa</option>
+              <option value="serie">Serie</option>
+            </select>
+          </div>
 
           {/* INPUT */}
           <div className="flex shadow-md rounded-md overflow-hidden h-14 border bg-white">
@@ -165,7 +204,11 @@ export default function ValidarPlaca() {
                 setCaptchaStarted(false);
                 setShowCaptcha(value.length >= 5);
               }}
-              placeholder="INGRESE NÚMERO DE PLACA"
+              placeholder={
+                tipoBusqueda === 'placa'
+                  ? 'INGRESE NÚMERO DE PLACA (EJ:58AP1G)'
+                  : 'INGRESE NÚMERO DE SERIE (VIN)'
+              }
               className="flex-1 px-6 outline-none font-semibold"
             />
           </div>
@@ -216,74 +259,68 @@ export default function ValidarPlaca() {
         {result && (
           <>
             {result && result.found && result.vehiculo && (
-  <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
+              <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
+                {/* HEADER */}
+                <div className="bg-green-600 text-white px-4 py-4 flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <span className="font-semibold text-base sm:text-lg leading-tight">
+                    Validación Exitosa – Placa Registrada en CNE
+                  </span>
+                </div>
 
-    {/* HEADER */}
-    <div className="bg-green-600 text-white px-4 py-4 flex items-center gap-3">
-      <CheckCircle className="w-6 h-6 flex-shrink-0" />
-      <span className="font-semibold text-base sm:text-lg leading-tight">
-        Validación Exitosa – Placa Registrada en CNE
-      </span>
-    </div>
+                {/* BODY */}
+                <div className="bg-white p-5 sm:p-6 space-y-4 text-gray-900">
+                  {/* DATOS */}
+                  <div className="space-y-2">
+                    <p className="text-sm sm:text-base">
+                      <strong>Placa:</strong>{' '}
+                      <span className="break-words">
+                        {result.vehiculo.numeroplaca}
+                      </span>
+                    </p>
 
-    {/* BODY */}
-    <div className="bg-white p-5 sm:p-6 space-y-4 text-gray-900">
+                    <p className="text-sm sm:text-base">
+                      <strong>Tipo:</strong>{' '}
+                      <span className="break-words">
+                        {result.vehiculo.tipotransporte}
+                      </span>
+                    </p>
 
-      {/* DATOS */}
-      <div className="space-y-2">
-        <p className="text-sm sm:text-base">
-          <strong>Placa:</strong>{' '}
-          <span className="break-words">
-            {result.vehiculo.numeroplaca}
-          </span>
-        </p>
+                    <p className="text-sm sm:text-base">
+                      <strong>Vigencia:</strong>{' '}
+                      {new Date(result.vehiculo.vigencia)
+                        .toISOString()
+                        .split('T')[0]}
+                    </p>
+                  </div>
 
-        <p className="text-sm sm:text-base">
-          <strong>Tipo:</strong>{' '}
-          <span className="break-words">
-            {result.vehiculo.tipotransporte}
-          </span>
-        </p>
+                  {/* ESTATUS */}
+                  <div className="flex items-center gap-2 flex-nowrap whitespace-nowrap">
+                    {/* ÍCONO */}
+                    <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
 
-        <p className="text-sm sm:text-base">
-          <strong>Vigencia:</strong>{' '}
-          {new Date(result.vehiculo.vigencia)
-            .toISOString()
-            .split('T')[0]}
-        </p>
-      </div>
-
-      {/* ESTATUS */}
-<div className="flex items-center gap-2 flex-nowrap whitespace-nowrap">
-  {/* ÍCONO */}
-  <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
-    <svg
-      className="w-4 h-4 text-white"
-      fill="currentColor"
-      viewBox="0 0 20 20"
-    >
-      <path
-        fillRule="evenodd"
-        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-        clipRule="evenodd"
-      />
-    </svg>
-  </div>
-
-  {/* TEXTO */}
-  <span className="text-green-700 font-bold text-lg sm:text-xl md:text-2xl">
-    AUTORIZADO
-  </span>
-</div>
-
-
-    </div>
-  </div>
-)}
-
+                    {/* TEXTO */}
+                    <span className="text-green-700 font-bold text-lg sm:text-xl md:text-2xl">
+                      AUTORIZADO
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
-
       </CardContent>
     </Card>
   );

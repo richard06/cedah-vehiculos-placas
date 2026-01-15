@@ -9,6 +9,7 @@ export interface Vehiculo {
   activo: boolean;
   created_at?: string;
   updated_at?: string;
+  numeroserie?: string;
 }
 const connectionString = process.env.DATABASE_URL as string;
 
@@ -46,7 +47,19 @@ export async function getVehiculoByPlaca(numeroplaca: string): Promise<Vehiculo 
     throw new Error('Error al consultar la base de datos');
   }
 }
-
+export async function getVehiculoBySerie(numeroserie: string): Promise<Vehiculo | null> {
+  try {
+    const result = await sql<Vehiculo>`
+      SELECT * FROM vehiculo 
+      WHERE numeroserie = ${numeroserie}
+      LIMIT 1
+    `;
+    return result.rows[0] || null;
+  } catch (error) {
+    console.error('Error al buscar vehículo:', error);
+    throw new Error('Error al consultar la base de datos');
+  }
+}
 export async function createVehiculo(
   numeroPlaca: number,
   tipotransporte: string,

@@ -58,11 +58,11 @@ export async function POST(request: NextRequest) {
         ),
       },
     });
-  } catch (error: any) {
-    console.error("Error en validación:", error);
-    return NextResponse.json(
-      { error: error.message || "Error al validar la placa" },
-      { status: 500 }
-    );
-  }
+} catch (err: any) {
+  console.error("DB ERROR:", err?.message, err?.code, err?.stack);
+  return NextResponse.json(
+    { error: "Error al consultar la base de datos" },
+    { status: 500 }
+  );
+}
 }

@@ -1,3 +1,4 @@
+import { sql } from '@vercel/postgres';
 import { Pool } from 'pg';
 
 export interface Vehiculo {
@@ -10,73 +11,69 @@ export interface Vehiculo {
   updated_at?: string;
   numeroserie?: string;
 }
-
 const connectionString = process.env.DATABASE_URL as string;
 
+
 if (!connectionString) {
-  throw new Error('DATABASE_URL no está definido en .env');
+throw new Error('DATABASE_URL no está definido en .env');
 }
 
-// Pool global (en serverless conviene que sea singleton)
-export const pool = new Pool({
-  connectionString,
-  // Si tu URL ya trae ?sslmode=require normalmente basta.
-  // Si aún así falla por SSL en algunos entornos, descomenta:
-  // ssl: { rejectUnauthorized: false },
-});
 
-// Función para ejecutar query
+export const pool = new Pool({
+connectionString,
+// Neon requiere SSL en muchos setups; si tu connection string ya lo incluye, está bien.
+});
+//Funcion para conexion
 export async function query(text: string, params?: any[]) {
-  const client = await pool.connect();
-  try {
-    const res = await client.query(text, params);
-    return res;
-  } finally {
-    client.release();
-  }
+const client = await pool.connect();
+try {
+const res = await client.query(text, params);
+return res;
+} finally {
+client.release();
+}
 }
 
 export async function getVehiculoByPlaca(numeroplaca: string): Promise<Vehiculo | null> {
   try {
-    const result = await query(
-      `SELECT * FROM vehiculo WHERE numeroplaca = $1 LIMIT 1`,
-      [numeroplaca]
-    );
-    return (result.rows[0] as Vehiculo) || null;
+    const result = await sql<Vehiculo>`
+      SELECT * FROM vehiculo 
+      WHERE numeroplaca = ${numeroplaca}
+      LIMIT 1
+    `;
+    return result.rows[0] || null;
   } catch (error) {
     console.error('Error al buscar vehículo:', error);
     throw new Error('Error al consultar la base de datos');
   }
 }
-
 export async function getVehiculoBySerie(numeroserie: string): Promise<Vehiculo | null> {
   try {
-    const result = await query(
-      `SELECT * FROM vehiculo WHERE numeroserie = $1 LIMIT 1`,
-      [numeroserie]
-    );
-    return (result.rows[0] as Vehiculo) || null;
+    const result = await sql<Vehiculo>`
+      SELECT * FROM vehiculo 
+      WHERE numeroserie = ${numeroserie}
+      LIMIT 1
+    `;
+    return result.rows[0] || null;
   } catch (error) {
     console.error('Error al buscar vehículo:', error);
     throw new Error('Error al consultar la base de datos');
   }
 }
-
 export async function createVehiculo(
-  numeroPlaca: string,
+  numeroPlaca: number,
   tipotransporte: string,
   vigencia: string
 ): Promise<Vehiculo> {
   try {
-    const result = await query(
-      `INSERT INTO vehiculo (numeroplaca, tipotransporte, vigencia, activo)
-       VALUES ($1, $2, $3, true)
-       RETURNING *`,
-      [numeroPlaca, tipotransporte, vigencia]
-    );
-    return result.rows[0] as Vehiculo;
+    const result = await sql<Vehiculo>`
+      INSERT INTO vehiculo (numeroplaca, tipotransporte, vigencia, activo)
+      VALUES (${numeroPlaca}, ${tipotransporte}, ${vigencia}, true)
+      RETURNING *
+    `;
+    return result.rows[0];
   } catch (error: any) {
-    if (error.code === '23505') {
+    if (error.code === '23505') { // Duplicate key error
       throw new Error('Esta placa ya está registrada');
     }
     console.error('Error al crear vehículo:', error);
@@ -86,10 +83,11 @@ export async function createVehiculo(
 
 export async function getAllVehiculos(): Promise<Vehiculo[]> {
   try {
-    const result = await query(
-      `SELECT * FROM vehiculo ORDER BY created_at DESC`
-    );
-    return result.rows as Vehiculo[];
+    const result = await sql<Vehiculo>`
+      SELECT * FROM vehiculo 
+      ORDER BY created_at DESC
+    `;
+    return result.rows;
   } catch (error) {
     console.error('Error al obtener vehículos:', error);
     throw new Error('Error al consultar la base de datos');

@@ -27,9 +27,9 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 flex-1">
+      <main className="container mx-auto px-35 py-6 flex-1">
         <Card className="shadow-lg border-0 rounded-xl" >
-          <CardHeader className="bg-[var(--maroon)] text-white p-1 rounded-t-xl">
+          <CardHeader className="bg-[var(--maroon)] text-white p-1 rounded-t-[5px]">
             <h2 className="text-xl font-bold flex items-start gap-3">
               <svg className="w-6 h-6 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />

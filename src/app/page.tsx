@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import ValidatePlaca from "@/components/ValidarPlaca";
+//import ValidatePlaca from "@/components/ValidarPlacaMock";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -67,7 +68,7 @@ export default function Home() {
             </h2>
           </CardHeader>
 
-          <CardContent className="p-6 bg-white">
+          <CardContent className="p-3 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               {/* Estado del Permiso */}
               <div>
@@ -232,42 +233,21 @@ export default function Home() {
     hour12: false,
   }).replace(',', '')}
 </small>
-
-
-
             </div>
 
             {/* Validar Placa */}
             <div className="mt-6 p-6 bg-gray-100 rounded-lg">
               <h5 className="text-center mb-4 flex items-center justify-center gap-2 text-lg font-semibold text-[20px]">
-                {/* <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z" />
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clipRule="evenodd" />
-                </svg> */}
+                {}
                 <Search size={20} color="#691C32" />
                 Validar Vehículo
               </h5>
 
-              {/* <div className="max-w-2xl mx-auto">
-                <div className="flex gap-3 mb-4">
-                  <div className="relative flex-1">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                      <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
-                      </svg>
-                    </div> */}
-                    <div className="w-full max-w-4xl mx-auto">
+              {}
+                    <div className="w-full max-w-8xl mx-auto">
             
                     <ValidatePlaca/>
-                    {/* <Input
-                      type="text"
-                      placeholder="INGRESE NÚMERO DE PLACA (EJ: 58AP1G)"
-                      maxLength={10}
-                      className="pl-10 h-12 text-sm uppercase font-semibold tracking-widest"
-                    />  
-                   </div>
-                </div> */}
+                    {}
               </div>
             </div>
           </CardContent>

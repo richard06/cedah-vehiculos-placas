@@ -194,7 +194,7 @@ setResult({
           </div>
 
           {/* INPUT */}
-          <div className="flex shadow-md rounded-md overflow-hidden h-14 border bg-white">
+          <div className="flex shadow-md rounded-md overflow-hidden h-16 border bg-white">
             <div className="bg-[#691C32] w-16 flex items-center justify-center">
               <CarFront className="text-white w-6 h-6" />
             </div>
@@ -271,47 +271,48 @@ setResult({
 {result && (
   <>
     {/* ✅ ÉXITO */}
-    {result.found && result.vehiculo && (
-      <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
-        {/* HEADER */}
-        <div className="bg-green-600 text-white px-4 py-4 flex items-center gap-3">
-          <CheckCircle className="w-6 h-6 flex-shrink-0" />
-          <span className="font-semibold text-base sm:text-lg leading-tight">
-            Validación Exitosa – Placa Registrada en CNE
-          </span>
+{result.found && result.vehiculo && (
+  <div className="border border-green-700 rounded-xl overflow-hidden max-w-4xl mx-auto shadow-sm">
+    {/* HEADER */}
+    <div className="bg-green-700 text-white px-4 py-4 flex items-center gap-3">
+      <CheckCircle className="w-6 h-6 flex-shrink-0" />
+      <span className="font-semibold text-base sm:text-lg leading-tight">
+        Validación Exitosa – Vehículo Registrado en CNE
+      </span>
+    </div>
+
+    {/* BODY */}
+    <div className="bg-white p-5 sm:p-6 text-gray-900">
+      {/* En móvil: stack / En md+: dos columnas (datos izquierda, estatus derecha) */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        {/* DATOS (izquierda) */}
+        <div className="space-y-2">
+          <p className="text-sm sm:text-base">
+            <strong>Placa:</strong>{' '}
+            <span className="break-words">{result.vehiculo.numeroplaca}</span>
+          </p>
+
+          <p className="text-sm sm:text-base">
+            <strong>Tipo de Transporte:</strong>{' '}
+            <span className="break-words">{result.vehiculo.tipotransporte}</span>
+          </p>
+
+          <p className="text-sm sm:text-base">
+            <strong>Vigencia:</strong>{' '}
+            {new Date(result.vehiculo.vigencia).toISOString().split('T')[0]}
+          </p>
         </div>
 
-        {/* BODY */}
-        <div className="bg-white p-5 sm:p-6 space-y-4 text-gray-900">
-          {/* DATOS */}
-          <div className="space-y-2">
-            <p className="text-sm sm:text-base">
-              <strong>Placa:</strong>{' '}
-              <span className="break-words">
-                {result.vehiculo.numeroplaca}
-              </span>
-            </p>
+        {/* ESTATUS (derecha en md+, abajo en móvil) */}
+        <div className="md:min-w-[320px]">
+          <p className="font-bold text-sm sm:text-base mb-2">
+            Estatus Actual de Unidad:
+          </p>
 
-            <p className="text-sm sm:text-base">
-              <strong>Tipo:</strong>{' '}
-              <span className="break-words">
-                {result.vehiculo.tipotransporte}
-              </span>
-            </p>
-
-            <p className="text-sm sm:text-base">
-              <strong>Vigencia:</strong>{' '}
-              {new Date(result.vehiculo.vigencia)
-                .toISOString()
-                .split('T')[0]}
-            </p>
-          </div>
-
-          {/* ESTATUS */}
-          <div className="flex items-center gap-2 flex-nowrap whitespace-nowrap">
+          <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
               <svg
-                className="w-4 h-4 text-white"
+                className="w-5 h-5 text-white"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -323,13 +324,15 @@ setResult({
               </svg>
             </div>
 
-            <span className="text-green-700 font-bold text-lg sm:text-xl md:text-2xl">
+            <span className="text-green-700 font-extrabold text-xl sm:text-2">
               AUTORIZADO
             </span>
           </div>
         </div>
       </div>
-    )}
+    </div>
+  </div>
+)}
 
     {/* ✅ ERROR */}
     {!result.found && (

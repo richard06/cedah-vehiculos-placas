@@ -260,7 +260,7 @@ export default function ValidarPlaca() {
         {result && (
           <>
             {result && result.found && result.vehiculo && (
-              <div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
+              <><div className="border border-green-600 rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
                 {/* HEADER */}
                 <div className="bg-green-600 text-white px-4 py-4 flex items-center gap-3">
                   <CheckCircle className="w-6 h-6 flex-shrink-0" />
@@ -307,8 +307,7 @@ export default function ValidarPlaca() {
                         <path
                           fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
+                          clipRule="evenodd" />
                       </svg>
                     </div>
 
@@ -318,7 +317,16 @@ export default function ValidarPlaca() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div><div className="bg-red-200 border-2 border-red-300 rounded-lg p-1">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-8 h-8 text-yellow-900 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-lg font-bold text-yellow-900">
+                        Error: Datos de placa no registrados en CNE
+                      </h4>
+                    </div>
+                  </div>
+                </div></>
             )}
           </>
         )}

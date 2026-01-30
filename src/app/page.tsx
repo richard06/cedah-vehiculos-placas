@@ -1,11 +1,39 @@
+'use client';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import ValidatePlaca from "@/components/ValidarPlaca";
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+    const [fechaHora, setFechaHora] = useState("");
+
+  useEffect(() => {
+    const tick = () => {
+      setFechaHora(
+        new Date()
+          .toLocaleString("es-MX", {
+            timeZone: "America/Mexico_City",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          })
+          .replace(",", "")
+      );
+    };
+
+    tick(); // pinta inmediato
+    const interval = setInterval(tick, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}

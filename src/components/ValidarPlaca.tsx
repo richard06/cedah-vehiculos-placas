@@ -7,7 +7,6 @@ import {
   AlertCircle,
   CarFront,
   ShieldCheck,
-  Search,
   SlidersHorizontal
 } from 'lucide-react';
 import { FriendlyCaptchaSDK } from '@friendlycaptcha/sdk';
@@ -20,7 +19,7 @@ const SITE_KEY = 'FCMH682ENJIB14E2';
 /* =========================
    TIPOS
 ========================= */
-interface ValidationResult {
+export interface ValidationResult {
   found: boolean;
   vehiculo?: {
     numeroplaca: string;
@@ -44,7 +43,12 @@ type CaptchaSDK = {
   }) => CaptchaWidget;
 };
 
-export default function ValidarPlaca() {
+type Props = {
+  onResultChange?: (r: ValidationResult | null) => void;
+  hideResult?: boolean;
+};
+
+export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
   const [numeroplaca, setNumeroPlaca] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
@@ -66,48 +70,51 @@ export default function ValidarPlaca() {
     if (typeof window === 'undefined') return;
     if (!captchaStarted || !captchaContainerRef.current) return;
 
-    // 🔴 CLAVE: si hay widget, NO creamos otro
+    // 🔴 si hay widget, NO creamos otro
     if (captchaWidgetRef.current) return;
 
     if (!captchaSdkRef.current) {
       captchaSdkRef.current =
-        new FriendlyCaptchaSDK({
-          apiEndpoint: 'global'
-        }) as unknown as CaptchaSDK;
+        new FriendlyCaptchaSDK({ apiEndpoint: 'global' }) as unknown as CaptchaSDK;
     }
 
-    captchaWidgetRef.current =
-      captchaSdkRef.current.createWidget({
-        element: captchaContainerRef.current,
-        sitekey: SITE_KEY,
-        startMode: 'manual',
-        language: 'en'
-      });
+    captchaWidgetRef.current = captchaSdkRef.current.createWidget({
+      element: captchaContainerRef.current,
+      sitekey: SITE_KEY,
+      startMode: 'manual',
+      language: 'en'
+    });
 
     const handleSolved = (e: Event) => {
       const custom = e as CustomEvent<{ response: string }>;
       setCaptchaToken(custom.detail.response);
     };
 
-    captchaContainerRef.current.addEventListener(
-      'frc:widget.complete',
-      handleSolved
-    );
+    captchaContainerRef.current.addEventListener('frc:widget.complete', handleSolved);
 
     return () => {
-      captchaContainerRef.current?.removeEventListener(
-        'frc:widget.complete',
-        handleSolved
-      );
+      captchaContainerRef.current?.removeEventListener('frc:widget.complete', handleSolved);
     };
   }, [captchaStarted]);
+
+  const resetCaptchaAndResult = () => {
+    setResult(null);
+    onResultChange?.(null);
+
+    if (captchaWidgetRef.current) {
+      captchaWidgetRef.current.destroy();
+      captchaWidgetRef.current = null;
+    }
+
+    setCaptchaToken(null);
+    setCaptchaStarted(false);
+    setShowCaptcha(false);
+  };
 
   /* =========================
      SUBMIT
   ========================= */
-  const handleValidate = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleValidate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!numeroplaca || !captchaToken) return;
 
@@ -127,40 +134,24 @@ export default function ValidarPlaca() {
 
       const data = await response.json().catch(() => ({}));
 
-setResult({
-  found: Boolean(data?.found),
-  vehiculo: data?.vehiculo,
-  message:
-    data?.message ??
-    (!response.ok
-      ? 'Error al validar, intente nuevamente'
-      : undefined)
-});
+      const finalResult: ValidationResult = {
+        found: Boolean(data?.found),
+        vehiculo: data?.vehiculo,
+        message: data?.message ?? (!response.ok ? 'Error al validar, intente nuevamente' : undefined)
+      };
 
-      setResult(data);
+      setResult(finalResult);
+      onResultChange?.(finalResult);
     } catch {
-      setResult({
+      const errResult: ValidationResult = {
         found: false,
         message: 'Error al conectar con el servidor'
-      });
+      };
+      setResult(errResult);
+      onResultChange?.(errResult);
     } finally {
       setLoading(false);
-      // ❗ NO tocamos captcha aquí
     }
-  };
-
-  const resetCaptchaAndResult = () => {
-    setResult(null);
-
-    // 🔑 DESTRUIMOS EL WIDGET
-    if (captchaWidgetRef.current) {
-      captchaWidgetRef.current.destroy();
-      captchaWidgetRef.current = null;
-    }
-
-    setCaptchaToken(null);
-    setCaptchaStarted(false);
-    setShowCaptcha(false);
   };
 
   /* =========================
@@ -169,8 +160,6 @@ setResult({
   return (
     <Card className="shadow-lg">
       <CardContent className="p-6 space-y-6">
-        {/* HEADER */}
-
         <form onSubmit={handleValidate} className="space-y-4">
           {/* SELECT: Placa / Serie */}
           <div className="flex shadow-md rounded-md overflow-hidden h-14 border bg-white">
@@ -205,8 +194,9 @@ setResult({
                 const value = e.target.value.toUpperCase();
                 setNumeroPlaca(value);
                 setResult(null);
+                onResultChange?.(null);
 
-                // 🔑 AQUÍ SÍ DESTRUIMOS EL WIDGET
+                // 🔑 destruimos widget al cambiar texto
                 if (captchaWidgetRef.current) {
                   captchaWidgetRef.current.destroy();
                   captchaWidgetRef.current = null;
@@ -233,16 +223,10 @@ setResult({
             >
               <ShieldCheck className="w-8 h-8 text-gray-700" />
               <div>
-                <p className="font-semibold">
-                  Anti-Robot Verification
-                </p>
-                <p className="text-sm text-gray-600">
-                  Click to start verification
-                </p>
+                <p className="font-semibold">Anti-Robot Verification</p>
+                <p className="text-sm text-gray-600">Click to start verification</p>
               </div>
-              <span className="ml-auto text-xs text-gray-400">
-                FriendlyCaptcha ↗
-              </span>
+              <span className="ml-auto text-xs text-gray-400">FriendlyCaptcha ↗</span>
             </div>
           )}
 
@@ -267,94 +251,82 @@ setResult({
           )}
         </form>
 
-{/* RESULTADO */}
-{result && (
-  <>
-    {/* ✅ ÉXITO */}
-{result.found && result.vehiculo && (
-  <div className="border border-green-700 rounded-xl overflow-hidden max-w-4xl mx-auto shadow-sm">
-    {/* HEADER */}
-    <div className="bg-green-700 text-white px-4 py-4 flex items-center gap-3">
-      <CheckCircle className="w-6 h-6 flex-shrink-0" />
-      <span className="font-semibold text-base sm:text-lg leading-tight">
-        Validación Exitosa – Vehículo Registrado en CNE
-      </span>
-    </div>
+        {/* RESULTADO (solo si NO está oculto) */}
+        {!hideResult && result && (
+          <>
+            {/* ÉXITO */}
+            {result.found && result.vehiculo && (
+              <div className="border border-green-800 rounded-xl overflow-hidden max-w-8xl mx-auto shadow-sm">
+                <div className="bg-green-700 text-white px-4 py-4 flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <span className="font-semibold text-base sm:text-lg leading-tight">
+                    Validación Exitosa – Vehículo Registrado en CNE
+                  </span>
+                </div>
 
-    {/* BODY */}
-    <div className="bg-white p-5 sm:p-6 text-gray-900">
-      {/* En móvil: stack / En md+: dos columnas (datos izquierda, estatus derecha) */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-        {/* DATOS (izquierda) */}
-        <div className="space-y-2">
-          <p className="text-sm sm:text-base">
-            <strong>Placa:</strong>{' '}
-            <span className="break-words">{result.vehiculo.numeroplaca}</span>
-          </p>
+                <div className="bg-white p-5 sm:p-6 text-gray-900">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                    <div className="space-y-2">
+                      <p className="text-sm sm:text-base">
+                        <strong>Placa:</strong>{' '}
+                        <span className="break-words">{result.vehiculo.numeroplaca}</span>
+                      </p>
 
-          <p className="text-sm sm:text-base">
-            <strong>Tipo de Transporte:</strong>{' '}
-            <span className="break-words">{result.vehiculo.tipotransporte}</span>
-          </p>
+                      <p className="text-sm sm:text-base">
+                        <strong>Tipo de Transporte:</strong>{' '}
+                        <span className="break-words">{result.vehiculo.tipotransporte}</span>
+                      </p>
 
-          <p className="text-sm sm:text-base">
-            <strong>Vigencia:</strong>{' '}
-            {new Date(result.vehiculo.vigencia).toISOString().split('T')[0]}
-          </p>
-        </div>
+                      <p className="text-sm sm:text-base">
+                        <strong>Vigencia:</strong>{' '}
+                        {new Date(result.vehiculo.vigencia).toISOString().split('T')[0]}
+                      </p>
+                    </div>
 
-        {/* ESTATUS (derecha en md+, abajo en móvil) */}
-        <div className="md:min-w-[320px]">
-          <p className="font-bold text-sm sm:text-base mb-2">
-            Estatus Actual de Unidad:
-          </p>
+                    <div className="md:min-w-[320px]">
+                      <p className="font-bold text-sm sm:text-base mb-2">Estatus Actual de Unidad:</p>
 
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
 
-            <span className="text-green-700 font-extrabold text-xl sm:text-2">
-              AUTORIZADO
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                        <span className="text-green-700 font-extrabold text-xl sm:text-2">
+                          AUTORIZADO
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-    {/* ✅ ERROR */}
-    {!result.found && (
-      <div className="max-w-md mx-auto">
-        <div className="bg-red-200 border-2 border-red-300 rounded-lg p-1">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-8 h-8 text-yellow-900 flex-shrink-0" />
-            <div>
-              <h4 className="text-lg font-bold text-yellow-900">
-                {result.message ??
-                  (tipoBusqueda === 'placa'
-                    ? 'Error: Datos de placa no registrados en CNE'
-                    : 'Error: Datos de serie no registrados en CNE')}
-              </h4>
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
-  </>
-)}
-
+            {/* ERROR */}
+            {!result.found && (
+              <div className="max-w-md mx-auto">
+                <div className="bg-red-200 border-2 border-red-300 rounded-lg p-1">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-8 h-8 text-yellow-900 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-lg font-bold text-yellow-900">
+                        {result.message ??
+                          (tipoBusqueda === 'placa'
+                            ? 'Error: Datos de placa no registrados en CNE'
+                            : 'Error: Datos de serie no registrados en CNE')}
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );

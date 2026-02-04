@@ -29,6 +29,11 @@ export interface ValidationResult {
   message?: string;
 }
 
+type Props = {
+  onResultChange?: (r: ValidationResult | null) => void;
+  hideResult?: boolean;
+};
+
 /* Tipos mínimos FriendlyCaptcha (sin any) */
 type CaptchaWidget = {
   destroy: () => void;
@@ -41,11 +46,6 @@ type CaptchaSDK = {
     startMode?: 'manual' | 'auto';
     language?: string;
   }) => CaptchaWidget;
-};
-
-type Props = {
-  onResultChange?: (r: ValidationResult | null) => void;
-  hideResult?: boolean;
 };
 
 export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
@@ -63,14 +63,44 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
   const captchaWidgetRef = useRef<CaptchaWidget | null>(null);
   const captchaSdkRef = useRef<CaptchaSDK | null>(null);
 
+  // ✅ NUEVO: si ya hay resultado, ocultamos captcha + botón
+  const hasResult = Boolean(result);
+
+  /* =========================
+     HELPERS
+  ========================= */
+  const destroyCaptchaWidget = () => {
+    if (captchaWidgetRef.current) {
+      captchaWidgetRef.current.destroy();
+      captchaWidgetRef.current = null;
+    }
+  };
+
+  const resetCaptcha = () => {
+    destroyCaptchaWidget();
+    setCaptchaToken(null);
+    setCaptchaStarted(false);
+    setShowCaptcha(false);
+  };
+
+  const resetCaptchaAndResult = () => {
+    setResult(null);
+    onResultChange?.(null);
+    resetCaptcha();
+  };
+
   /* =========================
      CREAR CAPTCHA (SOLO AL DAR CLICK)
   ========================= */
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // ✅ si ya hay resultado, no renderizamos captcha
+    if (hasResult) return;
+
     if (!captchaStarted || !captchaContainerRef.current) return;
 
-    // 🔴 si hay widget, NO creamos otro
+    // 🔴 CLAVE: si hay widget, NO creamos otro
     if (captchaWidgetRef.current) return;
 
     if (!captchaSdkRef.current) {
@@ -95,21 +125,7 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
     return () => {
       captchaContainerRef.current?.removeEventListener('frc:widget.complete', handleSolved);
     };
-  }, [captchaStarted]);
-
-  const resetCaptchaAndResult = () => {
-    setResult(null);
-    onResultChange?.(null);
-
-    if (captchaWidgetRef.current) {
-      captchaWidgetRef.current.destroy();
-      captchaWidgetRef.current = null;
-    }
-
-    setCaptchaToken(null);
-    setCaptchaStarted(false);
-    setShowCaptcha(false);
-  };
+  }, [captchaStarted, hasResult]);
 
   /* =========================
      SUBMIT
@@ -120,6 +136,7 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
 
     setLoading(true);
     setResult(null);
+    onResultChange?.(null);
 
     try {
       const response = await fetch('/api/validar', {
@@ -137,18 +154,33 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
       const finalResult: ValidationResult = {
         found: Boolean(data?.found),
         vehiculo: data?.vehiculo,
-        message: data?.message ?? (!response.ok ? 'Error al validar, intente nuevamente' : undefined)
+        message:
+          data?.message ??
+          (!response.ok ? 'Error al validar, intente nuevamente' : undefined)
       };
 
       setResult(finalResult);
       onResultChange?.(finalResult);
+
+      // ✅ NUEVO: al terminar (haya éxito o error) ocultamos captcha/botón
+      // con hasResult ya se oculta automáticamente, pero además limpiamos el widget
+      destroyCaptchaWidget();
+      setCaptchaStarted(false);
+      setShowCaptcha(false);
+      setCaptchaToken(null);
     } catch {
-      const errResult: ValidationResult = {
+      const finalResult: ValidationResult = {
         found: false,
         message: 'Error al conectar con el servidor'
       };
-      setResult(errResult);
-      onResultChange?.(errResult);
+      setResult(finalResult);
+      onResultChange?.(finalResult);
+
+      // ✅ igual ocultamos
+      destroyCaptchaWidget();
+      setCaptchaStarted(false);
+      setShowCaptcha(false);
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -193,17 +225,21 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
               onChange={(e) => {
                 const value = e.target.value.toUpperCase();
                 setNumeroPlaca(value);
-                setResult(null);
-                onResultChange?.(null);
 
-                // 🔑 destruimos widget al cambiar texto
-                if (captchaWidgetRef.current) {
-                  captchaWidgetRef.current.destroy();
-                  captchaWidgetRef.current = null;
+                // ✅ NUEVO: si había resultado, al escribir lo quitamos
+                // y obligamos a hacer captcha de nuevo
+                if (result) {
+                  setResult(null);
+                  onResultChange?.(null);
                 }
 
+                // ✅ siempre reiniciamos captcha cuando escriben
+                // para que “vuelva a pedir captcha”
+                destroyCaptchaWidget();
                 setCaptchaToken(null);
                 setCaptchaStarted(false);
+
+                // solo mostramos el bloque “click to start” si cumple largo mínimo
                 setShowCaptcha(value.length >= 5);
               }}
               placeholder={
@@ -215,8 +251,8 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
             />
           </div>
 
-          {/* CLICK TO START */}
-          {showCaptcha && !captchaStarted && (
+          {/* ✅ CLICK TO START (solo si NO hay resultado) */}
+          {!hasResult && showCaptcha && !captchaStarted && (
             <div
               onClick={() => setCaptchaStarted(true)}
               className="cursor-pointer border rounded-md p-4 flex items-center gap-4 hover:bg-gray-50"
@@ -230,15 +266,15 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
             </div>
           )}
 
-          {/* CAPTCHA REAL */}
-          {captchaStarted && (
+          {/* ✅ CAPTCHA REAL (solo si NO hay resultado) */}
+          {!hasResult && captchaStarted && (
             <div className="flex justify-center">
               <div ref={captchaContainerRef} />
             </div>
           )}
 
-          {/* BOTÓN */}
-          {captchaToken && (
+          {/* ✅ BOTÓN (solo si NO hay resultado) */}
+          {!hasResult && captchaToken && (
             <div className="flex justify-center">
               <button
                 type="submit"
@@ -251,10 +287,9 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
           )}
         </form>
 
-        {/* RESULTADO (solo si NO está oculto) */}
+        {/* RESULTADO (si no está hideResult) */}
         {!hideResult && result && (
           <>
-            {/* ÉXITO */}
             {result.found && result.vehiculo && (
               <div className="border border-green-800 rounded-xl overflow-hidden max-w-8xl mx-auto shadow-sm">
                 <div className="bg-green-700 text-white px-4 py-4 flex items-center gap-3">
@@ -284,7 +319,9 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
                     </div>
 
                     <div className="md:min-w-[320px]">
-                      <p className="font-bold text-sm sm:text-base mb-2">Estatus Actual de Unidad:</p>
+                      <p className="font-bold text-sm sm:text-base mb-2">
+                        Estatus Actual de Unidad:
+                      </p>
 
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center flex-shrink-0">
@@ -307,7 +344,6 @@ export default function ValidarPlaca({ onResultChange, hideResult }: Props) {
               </div>
             )}
 
-            {/* ERROR */}
             {!result.found && (
               <div className="max-w-md mx-auto">
                 <div className="bg-red-200 border-2 border-red-300 rounded-lg p-1">

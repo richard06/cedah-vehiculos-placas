@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import ValidatePlaca from "@/components/ValidarPlacaMock";
-//import ValidatePlaca from "@/components/ValidarPlaca";
+//import ValidatePlaca from "@/components/ValidarPlacaMock";
+import ValidatePlaca from "@/components/ValidarPlaca";
 import { Search, CheckCircle, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
